@@ -1,0 +1,12 @@
+{
+  "name": "envio-internacional-api",
+  "version": "1.0.0",
+  "description": "API de cálculo de costos de envío internacional",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
