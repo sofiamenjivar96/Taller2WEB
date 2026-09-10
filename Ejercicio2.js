@@ -2,8 +2,6 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-
-
 const tarifasPorPais = { // Tarifas por pais
   elsalvador: 1.50,
   guatemala: 2.00,
@@ -53,3 +51,65 @@ function calcularEnvio(pais, peso) { // Función principal que arma el resultado
     total
   };
 }
+
+const paisesPermitidos = Object.keys(tarifasPorPais);
+
+function validarPais(pais) { // Validar que el país sea válido
+  if (!pais || typeof pais !== 'string') {
+    return 'El país es obligatorio y debe ser un texto';
+  }
+  const paisNormalizado = pais.toLowerCase().trim();
+  if (!paisesPermitidos.includes(paisNormalizado)) {
+    return `País no permitido. Países válidos: ${paisesPermitidos.join(', ')}`;
+  }
+  return null;
+}
+
+// Validar que el peso sea válido
+function validarPeso(peso) {
+  if (peso === undefined || peso === null || peso === '') {
+    return 'El peso es obligatorio';
+  }
+  const pesoNumerico = Number(peso);
+  if (isNaN(pesoNumerico)) {
+    return 'El peso debe ser un valor numérico';
+  }
+  if (pesoNumerico <= 0) {
+    return 'El peso debe ser mayor a cero';
+  }
+  return null;
+}
+
+app.post('/api/calcular-envio', (req, res) => {
+  try {
+    const { pais, peso } = req.body;
+
+    const errorPais = validarPais(pais);
+    if (errorPais) {
+      return res.status(400).json({ error: errorPais });
+    }
+
+    const errorPeso = validarPeso(peso);
+    if (errorPeso) {
+      return res.status(400).json({ error: errorPeso });
+    }
+
+    const paisNormalizado = pais.toLowerCase().trim();
+    const pesoNumerico = Number(peso);
+
+    const resultado = calcularEnvio(paisNormalizado, pesoNumerico);
+
+    return res.status(200).json(resultado);
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Ocurrió un error interno al calcular el envío' });
+  }
+});
+
+//SERVIDOR 
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
